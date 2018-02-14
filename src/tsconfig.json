@@ -1,0 +1,11 @@
+{
+  "compilerOptions": {
+    "module": "system",
+    "target": "es5",
+    "sourceMap": true,
+    "outFile": "../out/insektile.js"
+  },
+  "exclude": [
+    "node_modules"
+  ]
+}
