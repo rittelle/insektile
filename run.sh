@@ -1,26 +1,32 @@
-#! /usr/bin/env nix-shell
-#! nix-shell -i bash -p qt5.qttools tree
+#!/usr/bin/env bash
 
 # A small script to run the script from the command line (or from an IDE).
-# WARNING: It tries to remove ./__nix_qt5__ , so make sure you have no data there.
 # It needs to be run inside the directory containing the script.
 
 DEBUG=false
 SCRIPT=$PWD/out/insektile.js
+SCRIPT_IS_DECLARATIVE=false
 PLUGIN_NAME=insektile
 
 # GLOBAL used to store the script index returned by KWin
 ID=-1
 
 function debug() {
-    if "$DEBUG"
+    if ${DEBUG}
     then
         >&2 echo "$*"
     fi
 }
 
 function load() {
-    ID=$(qdbus org.kde.KWin /Scripting loadScript "$SCRIPT" "$PLUGIN_NAME")
+    local METHOD_NAME=
+    if ${SCRIPT_IS_DECLARATIVE}
+    then
+        local METHOD_NAME='loadDeclarativeScript'
+    else
+        local METHOD_NAME='loadScript'
+    fi
+    ID=$(dbus-send --session --dest=org.kde.KWin --print-reply=literal /Scripting org.kde.kwin.Scripting.${METHOD_NAME} "string:$SCRIPT" "string:$PLUGIN_NAME" | awk '{print $2}')
     debug "Loaded '$SCRIPT' as KWin script with ID '$ID'"
     if [ "$ID" -ge 0 ]
     then
@@ -32,11 +38,11 @@ function load() {
 
 function run() {
     debug "Running '$SCRIPT'"
-    qdbus org.kde.KWin "/$ID" run
+    dbus-send --session --dest=org.kde.KWin --print-reply=literal "/$ID" org.kde.kwin.Scripting.run
 }
 
 function unload() {
-    local RET=$(qdbus org.kde.KWin /Scripting unloadScript "$PLUGIN_NAME")
+    local RET=$(dbus-send --session --dest=org.kde.KWin --print-reply=literal /Scripting org.kde.kwin.Scripting.unloadScript "string:$PLUGIN_NAME" | awk '{print $2}')
     debug "Got return value '$RET' trying to unload '$SCRIPT'"
     if [ "$RET" = 'true' ]
     then
@@ -46,7 +52,7 @@ function unload() {
 }
 
 function isloaded() {
-    local RET=$(qdbus org.kde.KWin /Scripting isScriptLoaded "$PLUGIN_NAME")
+    local RET=$(dbus-send --session --dest=org.kde.KWin --print-reply=literal /Scripting org.kde.kwin.Scripting.isScriptLoaded "string:$PLUGIN_NAME" | awk '{print $2}')
     debug "Got return value '$RET' testing if '$SCRIPT' is loaded"
     if [ "$RET" = 'true' ]
     then
@@ -91,9 +97,8 @@ fi
 
 debug "Starting monitor..."
 startmonitor
-debug "Monitor PID is $MONITOR_PID"
 
-sleep 1
+sleep 1 # Paranoid sleep to ensure dbus-monitor is active
 run
 
 pause "Press any key to unload the script..."

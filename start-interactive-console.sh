@@ -1,6 +1,3 @@
-#! /usr/bin/env nix-shell
-#! nix-shell -i bash -p qt5.qttools tree
+#!/usr/bin/env sh
 
-qdbus org.kde.plasmashell /PlasmaShell showInteractiveKWinConsole
-
-rm -rf __nix_qt5__
+dbus-send  --print-reply=literal --session --dest=org.kde.plasmashell /PlasmaShell org.kde.PlasmaShell.showInteractiveKWinConsole
