@@ -1,4 +1,4 @@
 .idea/
 __nix_qt5__/
-out/
+code/
 *.iml

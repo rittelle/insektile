@@ -3,7 +3,7 @@
     "module": "system",
     "target": "es5",
     "sourceMap": true,
-    "outFile": "../out/insektile.js"
+    "outFile": "../code/code/insektile.js"
   },
   "exclude": [
     "node_modules"

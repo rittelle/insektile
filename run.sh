@@ -3,9 +3,9 @@
 # A small script to run the script from the command line (or from an IDE).
 # It needs to be run inside the directory containing the script.
 
-DEBUG=false
-SCRIPT=$PWD/out/insektile.js
-SCRIPT_IS_DECLARATIVE=false
+DEBUG=true
+SCRIPT=$PWD/ui/main.qml
+SCRIPT_IS_DECLARATIVE=true
 PLUGIN_NAME=insektile
 
 # GLOBAL used to store the script index returned by KWin
