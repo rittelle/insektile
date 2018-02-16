@@ -2,3 +2,4 @@
 __nix_qt5__/
 code/
 *.iml
+*.qmlc

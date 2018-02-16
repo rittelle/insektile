@@ -1,11 +1,11 @@
 import QtQuick 2.0;
-//import "../code/insektile.js" as Insektile;
+import "../code/insektile.js" as Insektile;
 
 Item {
-    /*id: root
+    // id: root
 
     Component.onCompleted: {
-        console.log("Test 1");
-        //Insektile.main();
-    }*/
+        console.log("Test 2");
+        Insektile.main();
+    }
 }

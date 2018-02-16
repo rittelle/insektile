@@ -38,7 +38,12 @@ function load() {
 
 function run() {
     debug "Running '$SCRIPT'"
+    if ${SCRIPT_IS_DECLARATIVE}
+    then
+    dbus-send --session --dest=org.kde.KWin --print-reply=literal "/Scripting" org.kde.kwin.Scripting.start
+    else
     dbus-send --session --dest=org.kde.KWin --print-reply=literal "/$ID" org.kde.kwin.Scripting.run
+    fi
 }
 
 function unload() {
@@ -108,6 +113,10 @@ then
     if unload
     then
         echo "Unloaded script successfully"
+        if isloaded
+        then
+            echo "Script still seems to be loaded!"
+	fi
     else
         echo "Unloading script failed"
     fi
