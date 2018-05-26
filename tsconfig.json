@@ -1,0 +1,15 @@
+{
+    "compilerOptions": {
+        "module": "system",
+        "target": "es5",
+        "sourceMap": true,
+        "outFile": "contents/code/generated/insektile.js"
+    },
+    "include": [
+        "contents/code/typescript/*"
+    ],
+    "exclude": [
+        "node_modules"
+    ],
+    "compileOnSave": true
+}
