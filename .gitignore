@@ -1,5 +1,5 @@
 .idea/
 __nix_qt5__/
-code/
+generated/
 *.iml
 *.qmlc

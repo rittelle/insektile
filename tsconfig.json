@@ -3,7 +3,7 @@
         "module": "system",
         "target": "es5",
         "sourceMap": true,
-        "outFile": "contents/code/generated/insektile.js"
+        "outDir": "contents/code/generated"
     },
     "include": [
         "contents/code/typescript/*"

@@ -2,7 +2,7 @@ import QtQuick 2.0;
 import org.kde.plasma.core 2.0 as PlasmaCore;
 import org.kde.plasma.components 2.0 as Plasma;
 import org.kde.kwin 2.0;
-import "../code/generated/insektile.js" as Insektile;
+import "../code/generated/tilingmanager.js" as TM;
 
 Item {
     // id: root
@@ -15,7 +15,8 @@ Item {
         console.log(workspace.PlacementArea);
         console.log(options.PlacementArea);
         */
-        var tilingManager = Insektile.initialize();
+        var tilingManager = new TM.TilingManager();
+        tilingManager.initializeModel();
         console.log(JSON.stringify(tilingManager.tree.encode(), null, 2));
         //Insektile.debugPrints();
     }
