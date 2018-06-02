@@ -1,23 +1,31 @@
+Qt.include("./logger.js")
 Qt.include("./model.js")
+Qt.include("./util.js")
 
 class TilingManager {
+  private l: Logger = new Logger("TilingManager")
   private tree: Workspace
 
+  get currentDesktop(): Desktop {
+    return this.tree.currentDesktop
+  }
+
   public initializeModel() {
-    let activityIndex = 0
+    const activityIndex = 0
     const clientList = workspace.clientList()
     this.tree = new Workspace()
-    this.tree.currentActivityIndex = -1
-    this.tree.currentDesktopIndex = -1
+    let currentActivityIndex = -1
+    let currentDesktopIndex = -1
 
-    for (const a of workspace.activities) {
+    for (const a in workspace.activities) {
       const activity = new Activity(workspace.activities[a])
       this.tree.activities.push(activity)
 
       for (let d = 1; d <= workspace.desktops; ++d) {
-        const desktop = new Desktop(workspace.desktopName(d), new HorizontalArrayContainer())
+        const desktop = new Desktop(workspace.desktopName(d), (new HorizontalArrayContainer()))
+        desktop.tiled.rectangle = qRectToRectangle(workspace.clientArea(0, 0, d))
         if (d === workspace.currentDesktop) {
-          this.tree.currentDesktopIndex = d
+          currentDesktopIndex = d - 1
         }
         for (const c of clientList) {
           // No .includes() available
@@ -38,9 +46,16 @@ class TilingManager {
       }
 
       if (activity.id === workspace.currentActivity) {
-        this.tree.currentActivityIndex = activityIndex
+        currentActivityIndex = activityIndex
       }
-      ++activityIndex
     }
+
+    this.tree.currentActivityIndex = currentActivityIndex
+    this.onCurrentDesktopChanged(currentDesktopIndex, null)
+  }
+
+  public onCurrentDesktopChanged(lastDesktop: number, client: KWinClient) {
+    this.tree.currentDesktopIndex = workspace.currentDesktop - 1
+    this.l.d("Desktop switched to " + this.currentDesktop.name + " (index " + this.tree.currentDesktopIndex + ")")
   }
 }

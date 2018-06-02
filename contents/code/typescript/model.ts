@@ -35,8 +35,8 @@ class Activity {
 
   public encode(): IActivityJSON {
     return {
-      desktops: this.desktops.map((a) => a.encode()),
       id: this.id,
+      desktops: this.desktops.map((a) => a.encode()),
     }
   }
 }
@@ -44,7 +44,7 @@ class Activity {
 class Desktop {
   public name: string
   public floating: Client[]
-  public tiled: IContainer
+  public tiled: Container
 
   constructor(name: string, tiled) {
     this.name = name
@@ -61,21 +61,33 @@ class Desktop {
   }
 }
 
-interface IItem { encode(): IJSONEncoded }
+interface IItem {
+  rectangle: Rectangle
 
-interface IContainer extends IItem { add(client: Client) }
+  encode(): IItemJSON
+}
 
-abstract class ArrayContainer implements IContainer {
-  public content: IItem[]
+abstract class Container implements IItem {
+  public abstract rectangle: Rectangle
+  public abstract content: IItem[]
 
-  constructor() { this.content = [] }
+  public abstract add(client: Client)
+  public abstract encode(): IItemJSON
+}
+
+abstract class ArrayContainer extends Container {
+  public content: IItem[] = []
+  public rectangle: Rectangle
 
   public add(client: Client) {
     this.content.push(client)
   }
 
   public encode(): IArrayContainerJSON {
-    return { content: this.content.map((a) => a.encode()) }
+    return {
+      content: this.content.map((a) => a.encode()),
+      rectangle: this.rectangle,
+    }
   }
 }
 
@@ -86,11 +98,15 @@ class Client implements IItem {
   public client: KWinClient
 
   get caption(): string { return this.client.caption }
+  get rectangle(): Rectangle { return qRectToRectangle(this.client.geometry) }
 
   constructor(client: KWinClient) { this.client = client }
 
   public encode(): IClientJSON {
-    return { caption: this.caption }
+    return {
+      caption: this.caption,
+      rectangle: this.rectangle,
+    }
   }
 }
 
@@ -116,7 +132,7 @@ interface IDesktopJSON extends IJSONEncoded {
 }
 
 interface IItemJSON {
-
+  rectangle: Rectangle
 }
 
 interface IArrayContainerJSON extends IItemJSON {
