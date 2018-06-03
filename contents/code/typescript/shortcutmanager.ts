@@ -1,4 +1,7 @@
+Qt.include("./logger.js")
+
 class ShortcutManager {
+  private l = new Logger("ShortcutManager")
   private tilingManager: TilingManager
   private overlay: Overlay
 
@@ -7,20 +10,32 @@ class ShortcutManager {
     this.overlay = overlay
 
     KWin.registerShortcut(
-      "Insektile: Toggle Overlay",
-      "Toggles the layout overlay",
+      "Insektile-TileOnce",
+      "Insektile: Trigger the layouting once",
+      "Meta+T",
+      () => { this.tileOnce() },
+    )
+
+    KWin.registerShortcut(
+      "Insektile-OverlayToggle",
+      "Insektile: Toggle the layout overlay",
       "Meta+-",
-      () => { this.toggleOverlay() }
+      () => { this.toggleOverlay() },
     )
   }
 
-  public toggleOverlay() {
+  private tileOnce() {
+    this.l.d("Tiling once")
+    this.tilingManager.doLayoutForDesktop(this.tilingManager.currentDesktop)
+  }
+
+  private toggleOverlay() {
     if (this.overlay.shown) {
-      print("Hiding overlay")
+      this.l.d("Hiding overlay")
       this.overlay.hide()
     } else {
-      print("Showing overlay")
-      this.overlay.showFor(this.tilingManager.currentDesktop.tiled)
+      this.l.d("Showing overlay")
+      this.overlay.showForDesktop(this.tilingManager.currentDesktop)
     }
   }
 }

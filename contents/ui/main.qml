@@ -9,6 +9,10 @@ import "../code/generated/signalhandler.js" as SH;
 
 Item {
     // id: root
+  x: 10
+  y: 10
+  width:1000
+  height:1000
 
     property variant tilingManager;
     property variant overlay;
@@ -26,7 +30,7 @@ Item {
         tilingManager = new TM.TilingManager();
         tilingManager.initializeModel();
         console.log(JSON.stringify(tilingManager.tree.encode(), null, 2));
-        overlay = new O.Overlay(this);
+        overlay = new O.Overlay(tilingManager, this);
         shortcutManager = new SM.ShortcutManager();
         shortcutManager.registerShortcuts(tilingManager, overlay);
         signalHandler = new SH.SignalHandler();
@@ -34,25 +38,4 @@ Item {
         //
         //Insektile.debugPrints();
     }
-/*
-    PlasmaCore.Dialog {
-    id: dialog
-    location: PlasmaCore.Types.Floating
-    visible: true
-
-    mainItem: Item {
-        id: dialogItem
-
-        width: textElement.width
-        height: textElement.height
-
-        Plasma.Label {
-            id: textElement
-            anchors.top: parent.top
-            anchors.horizontalCenter: parent.horizontalCenter
-            text: "test"
-        }
-      }
-  }
-  */
 }

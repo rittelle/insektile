@@ -5,6 +5,7 @@ function initialize(): TilingManager {
 }
 
 function debugPrints() {
+  /*
     print("this")
     print(Object.keys(this))
     print("KWin")
@@ -20,4 +21,5 @@ function debugPrints() {
     for (const client of clients) {
         print(client.caption)
     }
+    */
 }

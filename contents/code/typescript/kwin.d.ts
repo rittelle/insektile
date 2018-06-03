@@ -15,6 +15,7 @@ declare const workspace: KWinWorkspaceWrapper
 declare namespace KWin {
   // TODO
   /** window movement snapping area? ignore struts. */
+  /*
   let PlacementArea
   let MovementArea
   let MaximizeArea
@@ -23,15 +24,16 @@ declare namespace KWin {
   let WorkArea
   let FullArea
   let ScreenArea
+  */
 
   /**
    * Registers the given sequece as a global shortcut.
    *
-   * @param title The title displayed in the shortcut settings.
-   * @param text ???
+   * @param title The object name of the resulting QAction which is also used as the identifier in the settings.
+   * @param text The title displayed in the shortcut settings.
    * @param keySequence E.g. "meta+a".
    * @param callback This gets called if the shortcut is triggered.
-   * @returns True on success, false if the callback is not callable.
+   * @returns True on success, at the time of writing this only returns false if the callback is not callable.
    */
   function registerShortcut(title: string, text: string, keySequence: string, callback: any /* TODO */): boolean
 }
@@ -40,7 +42,7 @@ declare namespace KWin {
  * Prints all provided values to kDebug and as a (D-Bus signal
  * @param values
  */
-declare function print(...values): void
+declare function print(...values: any[]): void
 
 /**
  * Aborts the execution of the script if value does not evaluate to true.
@@ -82,6 +84,12 @@ declare class KWinWorkspaceWrapper {
   /** */
   public activities: string[]
 
+  /** Index of the currently active screen. */
+  public activeScreen: number
+
+  /** Total number of connected screens. */
+  public numScreens: number
+
   // Read-write Properties
   /** */
   public currentDesktop: number
@@ -91,6 +99,9 @@ declare class KWinWorkspaceWrapper {
    * The first desktop has number 1.
    */
   public desktops: number
+
+  /** The active client. */
+  public activeClient: KWinClient
 
   // Functions
   /** List of Clients currently managed by KWin. */
@@ -118,12 +129,40 @@ declare class KWinWorkspaceWrapper {
    * - client: KWinClient ???
    */
   public currentDesktopChanged: QtSignal
+
+  /**
+   * Emitted when the window focus changes.
+   *
+   * Parameters:
+   * - client: KWinClient ???
+   */
+   public clientActivated: QtSignal
+
+  /**
+   * Emitted when a new window is shown.
+   *
+   * Parameters:
+   * - client: KWinClient The new client.
+   */
+   public clientAdded: QtSignal
+
+  /**
+   * Emitted when a new window is closed.
+   *
+   * Parameters:
+   * - client: KWinClient The closed client.
+   */
+   public clientRemoved: QtSignal
 }
 
 declare class KWinTopLevel {
+  // Read-only properties
   public activities: string[]
   public desktop: number
+  public screen: number
   public managed: boolean
+  public windowId: number
+  public windowType: number
   //rect: QRect
   public x: number
   public y: number
@@ -132,7 +171,13 @@ declare class KWinTopLevel {
 }
 
 declare class KWinClient extends KWinTopLevel {
-  // TODO
+  // Read-only properties
   public caption: string
+  /** Returns true if the window is of a type that is not managed by the user (e.g. docks, backgrounds, ...) */
+  public specialWindow: boolean
+  /** */
+  public resourceClass: string // TODO: Not a string (fixed with +"" for now ;))
+
+  // Read-write properties
   public geometry: QRect
 }

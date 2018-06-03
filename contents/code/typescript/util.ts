@@ -10,13 +10,27 @@ class Rectangle {
     this.w = w
     this.h = h
   }
+
+  /** Shrinks the recangle by a on every side and returns the result */
+  public trim(a: number): Rectangle {
+    return new Rectangle(
+      this.x + a,
+      this.y + a,
+      this.w - 2 * a,
+      this.h - 2 * a,
+    )
+  }
 }
 
 function qRectToRectangle(rect: QRect) {
-  return {
-    x: rect.x,
-    y: rect.y,
-    w: rect.width,
-    h: rect.height,
-  }
+  return new Rectangle(
+    rect.x,
+    rect.y,
+    rect.width,
+    rect.height,
+  )
+}
+
+function rectangleToQRect(rectangle: Rectangle) {
+  return Qt.qrect(rectangle.x, rectangle.y, rectangle.w, rectangle.h)
 }

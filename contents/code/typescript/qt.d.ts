@@ -1,15 +1,18 @@
 declare namespace Qt {
-  function include(path: string)
+  function include(path: string): void
 
   // Returns null on empty strings!
   function createComponent(url: string, mode?: object /* TODO: Enum */, parent?: object): Component
+
+  /** Creates a QRect object. */
+  function qrect(x: number, y: number, width: number, height: number): QRect
 }
 
 declare class QtObject {
 }
 
 declare class QtSignal {
-  public connect(slot: any)
+  public connect(slot: any): void
 }
 
 declare class QRect {
@@ -25,13 +28,13 @@ declare class Component {
   status: Component.Status
 
   // TODO: Return value correct?
-  createObject(parent?: QtObject, properties?: object): QmlItem
+  public createObject(parent?: QtObject, properties?: object): QmlItem
 
-  errorString(): string
+  public errorString(): string
 }
 
 declare namespace Component {
-  enum Status {}
+  enum Status { }
 
   let Null: Status
   let Ready: Status
@@ -40,5 +43,5 @@ declare namespace Component {
 }
 
 declare class QmlItem {
-  destroy(delay?: number)
+  destroy(delay?: number): void
 }

@@ -2,27 +2,46 @@ Qt.include("./model.js")
 
 class Overlay {
   private frames: QmlItem[]
+  private windows: QmlItem[]
+  private tilingManager: TilingManager
   private parent: QtObject
 
-  constructor(parent: QtObject) {
+  constructor(tilingManager: TilingManager, parent: QtObject) {
     this.frames = []
+    this.windows = []
+    this.tilingManager = tilingManager
     this.parent = parent
   }
 
   get shown(): boolean {
-    return this.frames.length !== 0
+    return this.windows.length !== 0
   }
 
-  public isShown(): boolean {
-    return this.shown
+  public showForDesktop(desktop: Desktop) {
+    const component = Qt.createComponent("../../ui/OverlayWindow.qml")
+    if (component.status === Component.Ready) {
+      for (const screen of desktop.screens) {
+        const window = component.createObject(this.parent, {})
+        const windowAny = window as any
+        //print(Object.keys(windowAny))
+        windowAny.screenX = screen.rectangle.x
+        windowAny.screenY = screen.rectangle.y
+        windowAny.screenH = screen.rectangle.h
+        windowAny.screenW = screen.rectangle.w
+        this.windows.push(window)
+        const mainItem = windowAny.mainItem
+        this.showForItem(screen.tiled, mainItem)
+      }
+    } else {
+      print("An error occured while creating the overlay: " + component.errorString())
+    }
   }
 
-  public showFor(item: IItem) {
-    this.hide()
+  public showForItem(item: IItem, window: QtObject) {
     const component = Qt.createComponent("../../ui/OverlayFrame.qml")
     if (component.status === Component.Ready) {
       print("Success")
-      this.showComponentFor(item, component)
+      this.showComponentForItem(item, window, component)
     } else {
       print("An error occured while creating the overlay: " + component.errorString())
     }
@@ -33,24 +52,37 @@ class Overlay {
       frame.destroy()
     }
     this.frames = []
+    for (const window of this.windows) {
+      window.destroy()
+    }
+    this.windows = []
   }
 
-  private showComponentFor(item: IItem, component: Component) {
-    function hasContent(i: IItem): i is Container {
-      return (i as Container).content !== undefined
+  private showComponentForItem(item: IItem, window: QtObject, component: Component) {
+    let title = "ERROR"
+    let isActive = false
+
+    if (isContainer(item)) {
+      title = "TODO"
+    } else if (isClient(item)) {
+      title = item.caption
+      isActive = item.windowId === this.tilingManager.currentClient.windowId
     }
 
-    const frame = component.createObject(this.parent, {
+    const frame = component.createObject(window, {
       frameX: item.rectangle.x,
       frameY: item.rectangle.y,
       frameW: item.rectangle.w,
       frameH: item.rectangle.h,
+      isContainer: isContainer(item),
+      isActive: isActive,
+      title: title,
     })
     this.frames.push(frame)
     //if (item instanceof Container) {
-    if (hasContent(item)) {
-      for (const child of item.content) {
-        this.showComponentFor(child, component)
+    if (isContainer(item)) {
+      for (const child of item.children) {
+        this.showComponentForItem(child, window, component)
       }
     } else {
     }

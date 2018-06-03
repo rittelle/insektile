@@ -6,14 +6,14 @@ class Logger {
   }
 
   public d(message: string) {
-    print(message)
+    print("[D]: " + message)
   }
 
   public w(message: string) {
-    print(message)
+    print("[W]: " + message)
   }
 
   public e(message: string) {
-    print(message)
+    print("[E]: " + message)
   }
 }
