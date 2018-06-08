@@ -136,7 +136,7 @@ declare class KWinWorkspaceWrapper {
    * Parameters:
    * - client: KWinClient ???
    */
-   public clientActivated: QtSignal
+  public clientActivated: QtSignal
 
   /**
    * Emitted when a new window is shown.
@@ -144,7 +144,7 @@ declare class KWinWorkspaceWrapper {
    * Parameters:
    * - client: KWinClient The new client.
    */
-   public clientAdded: QtSignal
+  public clientAdded: QtSignal
 
   /**
    * Emitted when a new window is closed.
@@ -152,7 +152,41 @@ declare class KWinWorkspaceWrapper {
    * Parameters:
    * - client: KWinClient The closed client.
    */
-   public clientRemoved: QtSignal
+  public clientRemoved: QtSignal
+
+  /**
+   * Emitted when a client is minimized.
+   * 
+   * Parameters:
+   * - client: KWinClient The changed client.
+   */
+  public clientMinimized: QtSignal
+
+  /**
+   * Emitted when a client is no longer minimized.
+   * 
+   * Parameters:
+   * - client: KWinClient The changed client.
+   */
+  public clientUnminimized: QtSignal
+
+  /**
+   * Emmitted when the maximized status of a client is changed.
+   * 
+   * Parameters:
+   * - client: KWinClient The changed client.
+   * - h: boolean True if the client is horizontally maximized.
+   * - v: boolean True if the client is vertically maximized.
+   */
+  public clientMaximizeSet: QtSignal
+
+  /**
+   * Emitted when a screen is resized.
+   *
+   * Parameters:
+   * - screen: number The changed screen.
+   */
+  public screenResized: QtSignal
 }
 
 declare class KWinTopLevel {
@@ -179,5 +213,8 @@ declare class KWinClient extends KWinTopLevel {
   public resourceClass: string // TODO: Not a string (fixed with +"" for now ;))
 
   // Read-write properties
+  /** Window geometry including border. */
   public geometry: QRect
+  /** True if the client is minimized. */
+  public minimized: boolean
 }

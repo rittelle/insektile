@@ -32,13 +32,21 @@ class Workspace {
     return result
   }
 
-  get allScreens(): Screen[] {
-    const ret: Screen[] = []
+  get allDesktops(): Desktop[] {
+    const ret: Desktop[] = []
     for (const activity of this.activities) {
       for (const desktop of activity.desktops) {
-        for (const screen of desktop.screens) {
-          ret.push(screen)
-        }
+        ret.push(desktop)
+      }
+    }
+    return ret
+  }
+
+  get allScreens(): Screen[] {
+    const ret: Screen[] = []
+    for (const desktop of this.allDesktops) {
+      for (const screen of desktop.screens) {
+        ret.push(screen)
       }
     }
     return ret
@@ -67,18 +75,94 @@ class Workspace {
     return null
   }
 
+  public desktopNumber(desktop: Desktop): number {
+    for (const activity of this.activities) {
+      const desktops = activity.desktops
+      for (const idx in desktops) {
+        if (desktops.hasOwnProperty(idx)) {
+          if (desktops[idx] === desktop) {
+            return Number(idx) + 1 // This KWin counts from 1 thingy
+          }
+        }
+      }
+    }
+    print("Could not find number for screen")
+    return -1
+  }
+
+  public screenNumber(screen: Screen): number {
+    for (const desktop of this.allDesktops) {
+      const screens = desktop.screens
+      for (const idx in screens) {
+        if (screens.hasOwnProperty(idx)) {
+          if (screens[idx] === screen) {
+            return Number(idx)
+          }
+        }
+      }
+    }
+    print("Could not find number for screen")
+    return -1
+  }
+
+  public desktopOfScreen(screen: Screen): Desktop {
+    for (const d of this.allDesktops) {
+      for (const s of d.screens) {
+        if (screen === s) {
+          return d
+        }
+      }
+    }
+    print("Could not find desktop for screen")
+    return null
+  }
+
+  /**
+   * Returns a list of the parent items of item, starting with the direct parent.
+   * 
+   * @param item
+   */
   public parentItems(item: IItem): IItem[] {
-    function findParent(currentItem: IItem): IItem | null {
+    function findParent(currentItem: IItem): IItem[] {
       if (isClient(currentItem)) {
-        return null
+        return []
       } else if (isContainer(currentItem)) {
         for (const child of currentItem.children) {
           if (child === item) {
-            return currentItem
+            return [currentItem]
           }
-          const parent = findParent(child)
-          if (parent !== null) {
-            return parent
+          const parents = findParent(child)
+          if (parents !== null) {
+            parents.push(currentItem)
+            return parents
+          }
+        }
+      } else {
+        print("Okay... " + item + "?")
+      }
+      return []
+    }
+
+    for (const screen of this.allScreens) {
+      const parents = findParent(screen.tiled)
+      if (parents.length > 0) {
+        return parents
+      }
+    }
+    return []
+  }
+
+  public screenOf(item: IItem): Screen {
+    function isItemChildOf(parentItem: IItem): boolean {
+      if (isClient(parentItem)) {
+        return null
+      } else if (isContainer(parentItem)) {
+        for (const child of parentItem.children) {
+          if (child === item) {
+            return true
+          }
+          if (isItemChildOf(child)) {
+            return true
           }
         }
       } else {
@@ -87,14 +171,20 @@ class Workspace {
       return null
     }
 
-    const ret: IItem[] = []
     for (const screen of this.allScreens) {
-      const parent = findParent(screen.tiled)
-      if (parent !== null) {
-        ret.push(parent)
+      if (isItemChildOf(screen.tiled)) {
+        return screen
+      }
+      if (isClient(item)) {
+        for (const floated of screen.floating) {
+          if (floated.windowId === item.windowId) {
+            return screen
+          }
+        }
       }
     }
-    return ret
+    print("Item does not have a screen?!")
+    return null
   }
 
   public encode(): IWorkspaceJSON {
@@ -191,6 +281,21 @@ abstract class ArrayContainer extends Container {
     return this.content.map((entry) => entry.child)
   }
 
+  get includedRatioSum(): number {
+    let total = 0
+    for (const entry of this.content) {
+      const child = entry.child
+      if (isClient(child)) {
+        if (!child.minimized && !child.maximizedH && !child.maximizedV) {
+          total += entry.ratio
+        }
+      } else {
+        total += entry.ratio
+      }
+    }
+    return total
+  }
+
   public add(client: Client) {
     const oldLength = this.content.length
     this.rebaseRatios(this.content, oldLength / (oldLength + 1))
@@ -236,10 +341,13 @@ class HorizontalArrayContainer extends ArrayContainer {
 class Client implements IItem {
   public client: KWinClient
   public rectangle: Rectangle
+  public maximizedV: boolean
+  public maximizedH: boolean
 
   get clients(): Client[] { return [this] }
   get caption(): string { return this.client.caption }
   get windowId(): number { return this.client.windowId }
+  get minimized(): boolean { return this.client.minimized }
 
   constructor(client: KWinClient) { this.client = client }
 
@@ -260,6 +368,9 @@ class Client implements IItem {
       caption: this.caption,
       rectangle: this.rectangle,
       windowId: this.windowId,
+      maximizedH: this.maximizedH,
+      maximizedV: this.maximizedV,
+      minimized: this.minimized
     }
   }
 }
@@ -315,4 +426,7 @@ interface IClientJSON extends IItemJSON {
   caption: string
   rectangle: Rectangle
   windowId: number
+  maximizedH: boolean
+  maximizedV: boolean
+  minimized: boolean
 }

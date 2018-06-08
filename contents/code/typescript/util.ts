@@ -34,3 +34,7 @@ function qRectToRectangle(rect: QRect) {
 function rectangleToQRect(rectangle: Rectangle) {
   return Qt.qrect(rectangle.x, rectangle.y, rectangle.w, rectangle.h)
 }
+
+function rectanglesEqual(a: Rectangle, b: Rectangle) {
+  return a.x === b.x && a.y === b.y && a.w === b.w && a.h === b.h
+}

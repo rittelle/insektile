@@ -28,6 +28,26 @@ class SignalHandler {
       this.l.d("clientRemoved(" + this.clientToString(client) + ")")
       this.tilingManager.onClientRemoved(client)
     })
+
+    workspace.clientMinimized.connect((client: KWinClient) => {
+      this.l.d("clientMinimized(" + this.clientToString(client) + ")")
+      this.tilingManager.onClientMinimizeSet(client, true)
+    })
+
+    workspace.clientUnminimized.connect((client: KWinClient) => {
+      this.l.d("clientUnminimized(" + this.clientToString(client) + ")")
+      this.tilingManager.onClientMinimizeSet(client, false)
+    })
+
+    workspace.clientMaximizeSet.connect((client: KWinClient, h: boolean, v: boolean) => {
+      this.l.d("clientMinimized(" + this.clientToString(client) + ", " + h + ", " + v + ")")
+      this.tilingManager.onClientMaximizeSet(client, h, v)
+    })
+
+    workspace.screenResized.connect((screen: number) => {
+      this.l.d("screenResized(" + screen + ")")
+      // TODO
+    })
   }
 
   private clientToString(client: KWinClient): string {

@@ -30,111 +30,76 @@ class TilingManager {
       if (!workspace.activities.hasOwnProperty(a)) {
         this.l.e("Invalid activity key?")
         break
-      }
+      } else {
+        const activity = new Activity(workspace.activities[a])
+        this.tree.activities.push(activity)
 
-      const activity = new Activity(workspace.activities[a])
-      this.tree.activities.push(activity)
-
-      for (let d = 1; d <= workspace.desktops; ++d) {
-        const desktop = new Desktop(workspace.desktopName(d))
-        if (d === workspace.currentDesktop) {
-          currentDesktopIndex = d - 1
-        }
-
-        for (let s = 0; s < workspace.numScreens; ++s) {
-          const screen = new Screen(new HorizontalArrayContainer())
-          screen.rectangle = qRectToRectangle(workspace.clientArea(0, s, d))
-          screen.tiled.rectangle = screen.rectangle
-          if (s === workspace.activeScreen) {
-            currentScreenIndex = s
+        for (let d = 1; d <= workspace.desktops; ++d) {
+          const desktop = new Desktop(workspace.desktopName(d))
+          if (d === workspace.currentDesktop) {
+            currentDesktopIndex = d - 1
           }
 
-          for (const c of clientList) {
-            // No .includes() available
-            // If a window is shown on all activities, the activity list is empty...
-            let inCurrentActivity = c.activities.length === 0
+          for (let s = 0; s < workspace.numScreens; ++s) {
+            const screen = new Screen(new HorizontalArrayContainer())
+            screen.rectangle = qRectToRectangle(workspace.clientArea(0, s, d))
+            screen.tiled.rectangle = screen.rectangle
+            if (s === workspace.activeScreen) {
+              currentScreenIndex = s
+            }
 
-            for (const aId of c.activities) {
-              if (aId === activity.id) {
-                inCurrentActivity = true
-                break
+            for (const c of clientList) {
+              // No .includes() available
+              // If a window is shown on all activities, the activity list is empty...
+              let inCurrentActivity = c.activities.length === 0
+
+              for (const aId of c.activities) {
+                if (aId === activity.id) {
+                  inCurrentActivity = true
+                  break
+                }
+              }
+
+              if (inCurrentActivity && c.desktop === d && c.managed) {
+                const client = new Client(c)
+                client.getRectangle()
+                screen.tiled.add(client)
               }
             }
 
-            if (inCurrentActivity && c.desktop === d && c.managed) {
-              const client = new Client(c)
-              client.getRectangle()
-              screen.tiled.add(client)
-            }
+            desktop.screens.push(screen)
           }
 
-          desktop.screens.push(screen)
+          activity.desktops.push(desktop)
         }
 
-        activity.desktops.push(desktop)
+        if (activity.id === workspace.currentActivity) {
+          currentActivityIndex = activityIndex
+        }
       }
 
-      if (activity.id === workspace.currentActivity) {
-        currentActivityIndex = activityIndex
-      }
+      this.tree.currentActivityIndex = currentActivityIndex
+      this.tree.currentScreenIndex = currentScreenIndex
+      this.onCurrentDesktopChanged()
+      this.onClientActivated()
     }
-
-    this.tree.currentActivityIndex = currentActivityIndex
-    this.tree.currentScreenIndex = currentScreenIndex
-    this.onCurrentDesktopChanged()
-    this.onClientActivated()
   }
 
   public doLayoutForDesktop(desktop: Desktop) {
     for (const screen of this.currentDesktop.screens) {
-      this.doLayoutForItem(screen.tiled, screen.rectangle)
+      this.doLayoutForScreen(screen)
     }
   }
 
-  public doLayoutForItem(item: IItem, rectangle: Rectangle, leaveMargins: boolean = true) {
-    function rectangleToString(r: Rectangle) {
-      return JSON.stringify(r)
-    }
+  public doLayoutForScreen(screen: Screen) {
+    const desktop = this.tree.desktopOfScreen(screen)
+    const clientArea = screen.rectangle = qRectToRectangle(workspace.clientArea(0, this.tree.screenNumber(screen), this.tree.desktopNumber(desktop)))
+    screen.rectangle = clientArea
+    this.doLayoutForItem(screen.tiled, screen.rectangle)
+  }
 
-    if (isContainer(item)) {
-      item.rectangle = rectangle
-      if (item instanceof HorizontalArrayContainer) {
-        this.l.d("Layouting horizontal array container inside " + rectangleToString(rectangle))
-        let distributed = 0
-        for (const entry of item.content) {
-          let rectangleForEntry: Rectangle
-          if (leaveMargins) {
-            rectangleForEntry = new Rectangle(
-              item.rectangle.x + this.spacing + distributed,
-              item.rectangle.y + this.spacing,
-              (item.rectangle.w - this.spacing * (item.children.length + 1)) * entry.ratio,
-              item.rectangle.h - this.spacing * 2,
-            )
-          } else {
-            rectangleForEntry = new Rectangle(
-              item.rectangle.x + distributed,
-              item.rectangle.y,
-              (item.rectangle.w - this.spacing * (item.children.length - 1)) * entry.ratio,
-              item.rectangle.h,
-            )
-          }
-          this.doLayoutForItem(entry.child, rectangleForEntry)
-          distributed += rectangleForEntry.w + this.spacing
-        }
-      } else {
-        this.l.e("Unknown container")
-      }
-    } else if (isClient(item)) {
-      item.rectangle = rectangle
-      this.l.d(
-        "Resizing the client " + item.caption +
-        " (windowId " + item.windowId + ") " +
-        "to " + rectangleToString(item.rectangle)
-      )
-      item.setRectangle()
-    } else {
-      this.l.e("Unknown item")
-    }
+  public doLayoutForItem(item: IItem, rectangle: Rectangle) {
+    this.layoutItem(item, rectangle)
   }
 
   public onCurrentDesktopChanged() {
@@ -196,6 +161,76 @@ class TilingManager {
       if (this.autoTiling) {
         this.doLayoutForItem(parent, parent.rectangle.trim(-this.spacing))
       }
+    }
+  }
+
+  public onClientMinimizeSet(client: KWinClient, m: boolean) {
+    const c = this.tree.clientWithWindowId(client.windowId)
+    const parents = this.tree.parentItems(c)
+    if (parents.length > 0) {
+      this.doLayoutForItem(parents[0], parents[0].rectangle)
+    }
+  }
+
+  public onClientMaximizeSet(client: KWinClient, h: boolean, v: boolean) {
+    const c = this.tree.clientWithWindowId(client.windowId)
+    c.maximizedH = h
+    c.maximizedV = v
+  }
+
+  public layoutItem(item: IItem, rectangle: Rectangle, leaveMargins: boolean = true) {
+    function rectangleToString(r: Rectangle) {
+      return JSON.stringify(r)
+    }
+
+    function isIncluded(item: IItem): boolean {
+      if (isClient(item)) {
+        return !item.minimized && !item.maximizedH && !item.maximizedV
+      }
+      return false
+    }
+
+    if (isContainer(item)) {
+      item.rectangle = rectangle
+      if (item instanceof HorizontalArrayContainer) {
+        this.l.d("Layouting horizontal array container inside " + rectangleToString(rectangle))
+        let distributed = 0
+        const filteredContent = item.content
+          .filter((value: ArrayContainerEntry, index: number, array: ArrayContainerEntry[]) => isIncluded(value.child))
+        const includedSum = item.includedRatioSum
+        for (const entry of filteredContent) {
+          let rectangleForEntry: Rectangle
+          if (leaveMargins) {
+            rectangleForEntry = new Rectangle(
+              item.rectangle.x + this.spacing + distributed,
+              item.rectangle.y + this.spacing,
+              (item.rectangle.w - this.spacing * (filteredContent.length + 1)) * entry.ratio / includedSum,
+              item.rectangle.h - this.spacing * 2,
+            )
+          } else {
+            rectangleForEntry = new Rectangle(
+              item.rectangle.x + distributed,
+              item.rectangle.y,
+              (item.rectangle.w - this.spacing * (filteredContent.length - 1)) * entry.ratio / includedSum,
+              item.rectangle.h,
+            )
+          }
+          this.doLayoutForItem(entry.child, rectangleForEntry)
+          distributed += rectangleForEntry.w + this.spacing
+        }
+      } else {
+        this.l.e("Unknown container")
+      }
+    } else if (isClient(item)) {
+      item.rectangle = rectangle
+      this.l.d(
+        "Resizing the client " + item.caption +
+        " (windowId " + item.windowId + ") " +
+        "to " + rectangleToString(item.rectangle)
+      )
+      item.setRectangle()
+    } else {
+      this.l.e("Unknown item")
     }
   }
 }
