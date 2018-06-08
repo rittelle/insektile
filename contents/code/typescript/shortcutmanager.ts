@@ -22,6 +22,13 @@ class ShortcutManager {
       "Meta+-",
       () => { this.toggleOverlay() },
     )
+
+    KWin.registerShortcut (
+      "Insektile-Debug-PrintModel",
+      "Insektile DEBUG: Print the current state of the internal model to debug",
+      "Meta+Ctrl+-",
+      () => { this.printModel() },
+    )
   }
 
   private tileOnce() {
@@ -37,5 +44,9 @@ class ShortcutManager {
       this.l.d("Showing overlay")
       this.overlay.showForDesktop(this.tilingManager.currentDesktop)
     }
+  }
+
+  private printModel() {
+      print(JSON.stringify(this.tilingManager.encodedTree, null, 2));
   }
 }

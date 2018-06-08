@@ -118,7 +118,9 @@ class Workspace {
   }
 
   /**
-   * Returns a list of the parent items of item, starting with the direct parent.
+   * Returns a list of the parent items of item.
+   * 
+   * An item can have multiple parents if it is visible on multiple activities or desktops.
    * 
    * @param item
    */
@@ -127,29 +129,31 @@ class Workspace {
       if (isClient(currentItem)) {
         return []
       } else if (isContainer(currentItem)) {
+        let ret: IItem[] = []
         for (const child of currentItem.children) {
           if (child === item) {
             return [currentItem]
           }
           const parents = findParent(child)
-          if (parents !== null) {
-            parents.push(currentItem)
-            return parents
+          if (parents.length > 0) {
+            ret = ret.concat(parents)
           }
         }
+        return ret
       } else {
         print("Okay... " + item + "?")
       }
       return []
     }
 
+    let ret: IItem[] = []
     for (const screen of this.allScreens) {
       const parents = findParent(screen.tiled)
       if (parents.length > 0) {
-        return parents
+        ret = ret.concat(parents)
       }
     }
-    return []
+    return ret
   }
 
   public screenOf(item: IItem): Screen {

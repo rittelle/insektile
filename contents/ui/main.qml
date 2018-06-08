@@ -29,7 +29,6 @@ Item {
         */
         tilingManager = new TM.TilingManager();
         tilingManager.initializeModel();
-        console.log(JSON.stringify(tilingManager.tree.encode(), null, 2));
         overlay = new O.Overlay(tilingManager, this);
         shortcutManager = new SM.ShortcutManager();
         shortcutManager.registerShortcuts(tilingManager, overlay);

@@ -18,6 +18,10 @@ class TilingManager {
     return this.tree.currentClient
   }
 
+  get encodedTree(): IWorkspaceJSON {
+    return this.tree.encode()
+  }
+
   public initializeModel() {
     const activityIndex = 0
     const clientList = workspace.clientList()
@@ -132,14 +136,16 @@ class TilingManager {
 
   public onClientAdded(client: KWinClient) {
     const c = new Client(client)
-    c.getRectangle()
-    for (const activityId of client.activities) {
+    const activities = client.activities.length > 0 ? client.activities : this.tree.activities.map((a) => a.id)
+    for (const activityId of activities) {
       const activity = this.tree.activityWithId(activityId)
       if (activity === null) {
         this.l.e("Activity with id " + activityId + " not found")
       }
-      const screen = activity.desktops[client.desktop - 1].screens[client.screen]
+      const desktop = activity.desktops[client.desktop - 1]
+      const screen = desktop.screens[client.screen]
       screen.tiled.add(c)
+      this.l.d("Added client " + c.caption + " to activity " + activityId + " at desktop " + desktop.name + " on screen " + client.screen)
       if (this.autoTiling) {
         this.doLayoutForItem(screen.tiled, screen.rectangle)
       }
@@ -148,18 +154,23 @@ class TilingManager {
 
   public onClientRemoved(client: KWinClient) {
     const c = this.tree.clientWithWindowId(client.windowId)
+    //assert(c !== null, "Removed client not found") // TODO: Reenable after assert implementation
     for (const screen of this.tree.allScreens) {
       const index = screen.floating.indexOf(c)
       if (index >= 0) {
         screen.floating.splice(index, 1)
+        this.l.d("Removed floating client " + c.caption)
       }
     }
-    for (const parent of this.tree.parentItems(c)) {
+    const parents = this.tree.parentItems(c)
+    this.l.d(parents.length + " parents found for client " + c.caption)
+    for (const parent of parents) {
       if (isContainer(parent)) {
         parent.remove(c)
+        this.l.d("Removed client " + c.caption)
       }
       if (this.autoTiling) {
-        this.doLayoutForItem(parent, parent.rectangle.trim(-this.spacing))
+        this.doLayoutForItem(parent, parent.rectangle)
       }
     }
   }
@@ -167,9 +178,7 @@ class TilingManager {
   public onClientMinimizeSet(client: KWinClient, m: boolean) {
     const c = this.tree.clientWithWindowId(client.windowId)
     const parents = this.tree.parentItems(c)
-    if (parents.length > 0) {
-      this.doLayoutForItem(parents[0], parents[0].rectangle)
-    }
+    // TODO: Autolayout stuff
   }
 
   public onClientMaximizeSet(client: KWinClient, h: boolean, v: boolean) {
