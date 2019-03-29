@@ -6,7 +6,7 @@
         "outDir": "contents/code/generated",
         "noImplicitAny": true,
         "alwaysStrict": true,
-        "lib": ["ES5"]
+        "lib": ["es5"]
     },
     "include": [
         "contents/code/typescript/*"
@@ -14,5 +14,5 @@
     "exclude": [
         "node_modules"
     ],
-    "compileOnSave": false
+    "compileOnSave": true
 }

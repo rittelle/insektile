@@ -48,6 +48,11 @@ class SignalHandler {
       this.l.d("screenResized(" + screen + ")")
       // TODO
     })
+
+    workspace.currentActivityChanged.connect((id: string) => {
+      this.l.d("currentActivityChanged("+id+")")
+      // TODO
+    })
   }
 
   private clientToString(client: KWinClient): string {

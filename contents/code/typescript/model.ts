@@ -10,15 +10,35 @@ class Workspace {
   }
 
   get currentActivity(): Activity {
-    return this.activities[this.currentActivityIndex]
+    let ret = this.activities[this.currentActivityIndex]
+    if (ret === undefined) {
+      print("Current activity is undefined, index is " + this.currentActivityIndex)
+    }
+    return ret
   }
 
   get currentDesktop(): Desktop {
-    return this.currentActivity.desktops[this.currentDesktopIndex]
+    let currentActivity = this.currentActivity
+    if (currentActivity === undefined) {
+      return undefined
+    }
+    let ret = currentActivity.desktops[this.currentDesktopIndex]
+    if (ret === undefined) {
+      print("Current desktop is undefined, index is " + this.currentDesktopIndex)
+    }
+    return ret
   }
 
   get currentScreen(): Screen {
-    return this.currentDesktop.screens[this.currentScreenIndex]
+    let currentDesktop = this.currentDesktop
+    if (currentDesktop === undefined) {
+      return undefined
+    }
+    let ret = this.currentDesktop.screens[this.currentScreenIndex]
+    if (ret === undefined) {
+      print("Current screen is undefined, index is " + this.currentDesktopIndex)
+    }
+    return ret
   }
 
   get currentClient(): Client | null {
@@ -73,6 +93,18 @@ class Workspace {
       }
     }
     return null
+  }
+
+  public activityIndex(activity: Activity | string): number {
+    for (const idx in this.activities) {
+      if (this.activities.hasOwnProperty(idx)) {
+        if (this.activities[idx] === activity || this.activities[idx].id === activity) {
+          return Number(idx)
+        }
+      }
+    }
+    print("Could not find index for activity")
+    return -1
   }
 
   public desktopNumber(desktop: Desktop): number {

@@ -187,10 +187,19 @@ declare class KWinWorkspaceWrapper {
    * - screen: number The changed screen.
    */
   public screenResized: QtSignal
+
+  /**
+   * Signal emitted whenever the current activity changed.
+   * 
+   * Parameters:
+   * - id: string The ID of the new current activity.
+   */
+  currentActivityChanged: QtSignal
 }
 
 declare class KWinTopLevel {
   // Read-only properties
+  /** A list of IDs, empty means on all activities. */
   public activities: string[]
   public desktop: number
   public screen: number

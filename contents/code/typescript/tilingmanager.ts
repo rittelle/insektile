@@ -10,6 +10,10 @@ class TilingManager {
   private autoTiling: boolean = false
   private spacing: number = 10
 
+  get currentActivity(): Activity {
+    return this.tree.currentActivity
+  }
+
   get currentDesktop(): Desktop {
     return this.tree.currentDesktop
   }
@@ -185,6 +189,14 @@ class TilingManager {
     const c = this.tree.clientWithWindowId(client.windowId)
     c.maximizedH = h
     c.maximizedV = v
+  }
+  
+  public onCurrentActivityChanged(id: string) {
+    this.tree.currentActivityIndex = this.tree.activityIndex(id)
+    this.l.d(
+      "Activity switched to " + this.currentActivity +
+      " (index " + this.tree.currentActivityIndex + ")"
+    )
   }
 
   public layoutItem(item: IItem, rectangle: Rectangle, leaveMargins: boolean = true) {
