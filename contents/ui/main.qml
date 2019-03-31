@@ -20,6 +20,9 @@ Item {
     property variant signalHandler;
 
     Component.onCompleted: {
+        print(Object.keys(Qt))
+        print()
+        print(Object.keys(KWin))
                            /*
         console.log("Test 4");
         console.log(this);

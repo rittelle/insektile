@@ -33,17 +33,17 @@ class Overlay {
         this.showForItem(screen.tiled, mainItem)
       }
     } else {
-      print("An error occured while creating the overlay: " + component.errorString())
+      print("An error occurred while creating the overlay: " + component.errorString())
     }
   }
 
   public showForItem(item: IItem, window: QtObject) {
     const component = Qt.createComponent("../../ui/OverlayFrame.qml")
     if (component.status === Component.Ready) {
-      print("Success")
+      print("Successfully loaded the overlay component")
       this.showComponentForItem(item, window, component)
     } else {
-      print("An error occured while creating the overlay: " + component.errorString())
+      print("An error occurred while creating the overlay: " + component.errorString())
     }
   }
 

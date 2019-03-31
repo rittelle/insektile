@@ -11,12 +11,5 @@ else
     kwin_x11 --replace &
 fi
 
-P=/src/contents/
-E=--exclude /src/contents/code/typescript
-inotifywait -r -q -m -e close_write --format %e $P | while read events; do
-    echo -n 'Reinstalling Insektile… '
-    plasmapkg2 -u /src/
-    echo 'Restarting KWin'
-    kwin_x11 --replace &
-done
+ls /src/contents/code/generated/*.js /src/contents/ui/*.qml | entr -cdp /src/test-docker/update.sh
 

@@ -1,6 +1,6 @@
 FROM kdeneon/plasma
 USER root
-RUN apt-get install -y kdebugsettings inotify-tools
+RUN apt-get install -y kdebugsettings entr
 # Disable the screen locker
 RUN mkdir -p /home/neon/.config
 ADD kscreenlockerrc /home/neon/.config
