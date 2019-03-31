@@ -35,8 +35,8 @@ class TilingManager {
     let currentDesktopIndex = -1
 
     for (const a in workspace.activities) {
-      if (!workspace.activities.hasOwnProperty(a)) {
-        this.l.e("Invalid activity key?")
+      if (!workspace.activities[a] === undefined) {
+        this.l.e("Invalid activity key: '" + a + "'!?")
         break
       } else {
         const activity = new Activity(workspace.activities[a])
@@ -190,7 +190,7 @@ class TilingManager {
     c.maximizedH = h
     c.maximizedV = v
   }
-  
+
   public onCurrentActivityChanged(id: string) {
     this.tree.currentActivityIndex = this.tree.activityIndex(id)
     this.l.d(

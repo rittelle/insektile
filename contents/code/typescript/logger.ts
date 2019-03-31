@@ -6,14 +6,14 @@ class Logger {
   }
 
   public d(message: string) {
-    print("[D]: " + message)
+    root.d("[D] " + this.tag + ": " + message)
   }
 
   public w(message: string) {
-    print("[W]: " + message)
+    root.w("[W]: " + this.tag + ": " + message)
   }
 
   public e(message: string) {
-    print("[E]: " + message)
+    root.e("[E]: " + this.tag + ": " + message)
   }
 }

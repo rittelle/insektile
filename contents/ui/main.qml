@@ -8,7 +8,7 @@ import "../code/generated/shortcutmanager.js" as SM;
 import "../code/generated/signalhandler.js" as SH;
 
 Item {
-    // id: root
+  id: root
   x: 10
   y: 10
   width:1000
@@ -36,5 +36,20 @@ Item {
         signalHandler.connectSignals(tilingManager, overlay)
         //
         //Insektile.debugPrints();
+    }
+
+    function d(msg) {
+        console.log(msg);
+        //console.trace();
+    }
+
+    function w(msg) {
+        console.log(msg);
+        //console.trace();
+    }
+
+    function e(msg) {
+        console.log(msg);
+        console.trace();
     }
 }
