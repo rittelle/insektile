@@ -1,0 +1,7 @@
+[Desktop Entry]
+Name=Insektile updater
+Exec=/home/neon/auto_update_script.sh
+Terminal=true
+Type=Application
+StartupNotify=false
+X-GNOME-Autostart-enabled=true
